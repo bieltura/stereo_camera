@@ -10,4 +10,4 @@ __pycache__/
 
 # Local chessboard images and calibration
 models/*.npy
-images/*.jpg 
+images/*.png

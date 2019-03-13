@@ -16,11 +16,13 @@ CamR = cv2.VideoCapture(devices[0])
 
 input("Connect the left camera and press any key ...")
 devices = glob.glob("/dev/video?")
-CamL = cv2.VideoCapture(devices[1])
+CamL = cv2.VideoCapture(devices[0])
 
 # StereoCalibrate function
 flags = 0
 flags |= cv2.CALIB_FIX_INTRINSIC
+
+# is MLS = mtxL?
 
 retS, MLS, dLS, MRS, dRS, R, T, E, F = cv2.stereoCalibrate(objpoints,
                                                            imgpointsL,

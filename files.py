@@ -11,16 +11,6 @@ filename_mtL = os.path.join("models/", "{}.npy".format("mtxL"))
 filename_dL = os.path.join("models/", "{}.npy".format("distL"))
 filename_chR = os.path.join("models/", "{}.npy".format("ChessImaR"))
 
-# Read
-imgpointsR = np.load(filenameR)
-imgpointsL = np.load(filenameL)
-objpoints = np.load(filename_op)
-mtxR = np.load(filename_mtR)
-distR = np.load(filename_dR)
-mtxL = np.load(filename_mtL)
-distL = np.load(filename_dL)
-ChessImaR = np.load(filename_chR)
-
 
 def write_calibration(imgpointsL, imgpointsR, objpoints, mtxR, distR, mtxL, distL, ChessImaR):
     np.save(filenameL, imgpointsL)

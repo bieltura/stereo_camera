@@ -1,11 +1,10 @@
 import cv2
-import glob
 import numpy as np
 import files
 
 # Variables for calibration
-num_pictures = 60
-chessboard_dim = (9, 6)
+num_pictures = 20
+chessboard_dim = (8, 5)
 pic = 0
 
 # Image variables
@@ -25,81 +24,40 @@ imgpointsR = []   # 2d points in image plane
 imgpointsL = []
 
 print("Files for calibration generated")
+print("Loading chessboard pictures")
 
-# Call the two cameras
-input("Connect the right camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamR = cv2.VideoCapture(devices[0])
-
-input("Connect the left camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamL = cv2.VideoCapture(devices[1])
-
-# Start the calibration process
-print("Calibration process started, press 'C' to take a picture")
-
-while True:
-
-    key = cv2.waitKey(1)
+for pic in range(num_pictures):
 
     # Capture the frame
-    retR, frameR = CamR.read()
-    retL, frameL = CamL.read()
+    frameR = cv2.imread('images/chessboard-R'+str(pic)+'.png')
+    frameL = cv2.imread('images/chessboard-R' + str(pic) + '.png')
 
     # Convert to gray scale
     grayR = cv2.cvtColor(frameR, cv2.COLOR_BGR2GRAY)
     grayL = cv2.cvtColor(frameL, cv2.COLOR_BGR2GRAY)
 
-    # See the images
-    cv2.imshow('imgR', cv2.resize(frameR, (320, 240)))
-    cv2.imshow('imgL', cv2.resize(frameL, (320, 240)))
+    # Find the chess board corners
+    retR, cornersR = cv2.findChessboardCorners(grayR, chessboard_dim, None)
+    retL, cornersL = cv2.findChessboardCorners(grayL, chessboard_dim, None)
 
-    # If key is 'c' for capture
-    if key & 0xFF == ord('c'):
+    # If found, add object points, image points (after refining them)
+    if retR and retL:
+        objpoints.append(objp)
 
-        # Find the chess board corners
-        retR, cornersR = cv2.findChessboardCorners(grayR, chessboard_dim, None)
-        retL, cornersL = cv2.findChessboardCorners(grayL, chessboard_dim, None)
+        corners2R = cv2.cornerSubPix(grayR, cornersR, (11, 11), (-1, -1), criteria_stereo)
+        imgpointsR.append(cornersR)
 
-        # If found, add object points, image points (after refining them)
-        if retR and retL:
-            objpoints.append(objp)
+        corners2L = cv2.cornerSubPix(grayL, cornersL, (11, 11), (-1, -1), criteria_stereo)
+        imgpointsL.append(cornersL)
 
-            corners2R = cv2.cornerSubPix(grayR, cornersR, (11, 11), (-1, -1), criteria_stereo)
-            imgpointsR.append(cornersR)
-
-            corners2L = cv2.cornerSubPix(grayL, cornersL, (11, 11), (-1, -1), criteria_stereo)
-            imgpointsL.append(cornersL)
-
-            # Draw and display the corners
-            cv2.drawChessboardCorners(grayR, chessboard_dim, corners2R, retR)
-            cv2.drawChessboardCorners(grayL, chessboard_dim, corners2L, retL)
-
-            cv2.imshow('VideoR', cv2.resize(grayR, (320, 240)))
-            cv2.imshow('VideoL', cv2.resize(grayL, (320, 240)))
-
-            # Save the image in the file where this Programm is located
-            cv2.imwrite('images/chessboard-R'+str(pic)+'.png',frameR)
-            cv2.imwrite('images/chessboard-L'+str(pic)+'.png',frameL)
-
-            pic = pic + 1
-            print('Chessboard {0}/{1}'.format(pic, num_pictures))
-
-        # End the Programme
-        if pic > num_pictures:
-            print("Starting calibration process ...")
-            ChessImaR = grayR
-            ChessImaL = grayL
-            break
-
-# Release the Cameras
-CamR.release()
-CamL.release()
-cv2.destroyAllWindows()
+        print('Loaded chessboard {0}/{1}'.format(pic, num_pictures))
 
 # Calibration
-_, mtxR, distR, _, _ = cv2.calibrateCamera(objpoints, imgpointsR, ChessImaR.shape[::-1], None, None)
-_, mtxL, distL, _, _ = cv2.calibrateCamera(objpoints, imgpointsL, ChessImaL.shape[::-1], None, None)
+_, mtxR, distR, _, _ = cv2.calibrateCamera(objpoints, imgpointsR, grayR.shape[::-1], None, None)
+_, mtxL, distL, _, _ = cv2.calibrateCamera(objpoints, imgpointsL, grayL.shape[::-1], None, None)
+
+print("A matrix: {}".format(mtxR))
+print("Distoriton coefficients: {}".format(distR))
 
 files.write_calibration(imgpointsL, imgpointsR, objpoints, mtxR, distR, mtxL, distL, ChessImaR)
 

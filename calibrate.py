@@ -56,8 +56,11 @@ for pic in range(num_pictures):
 _, mtxR, distR, _, _ = cv2.calibrateCamera(objpoints, imgpointsR, grayR.shape[::-1], None, None)
 _, mtxL, distL, _, _ = cv2.calibrateCamera(objpoints, imgpointsL, grayL.shape[::-1], None, None)
 
-print("A matrix: {}".format(mtxR))
-print("Distoriton coefficients: {}".format(distR))
+print("Right camera: A matrix: \n{}".format(mtxR))
+print("Distoriton coefficients: \n{}".format(distR))
+
+print("Left camera: A matrix: \n{}".format(mtxL))
+print("Distoriton coefficients: \n{}".format(distL))
 
 files.write_calibration(imgpointsL, imgpointsR, objpoints, mtxR, distR, mtxL, distL, ChessImaR)
 

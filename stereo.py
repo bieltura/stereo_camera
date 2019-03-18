@@ -23,19 +23,22 @@ flags = 0
 flags |= cv2.CALIB_FIX_INTRINSIC
 
 # is MLS = mtxL?
+print(mtxL)
 
-retS, MLS, dLS, MRS, dRS, R, T, E, F = cv2.stereoCalibrate(objpoints,
-                                                           imgpointsL,
-                                                           imgpointsR,
-                                                           mtxL,
-                                                           distL,
-                                                           mtxR,
-                                                           distR,
-                                                           ChessImaR.shape[::-1],
-                                                           criteria_stereo,
-                                                           flags)
+retS, MLS, dLS, MRS, dRS, R, T, E, F = cv2.stereoCalibrate(objectPoints=objpoints,
+                                                           imagePoints1=imgpointsL,
+                                                           imagePoints2=imgpointsR,
+                                                           cameraMatrix1=mtxL,
+                                                           distCoeffs1=distL,
+                                                           cameraMatrix2=mtxR,
+                                                           distCoeffs2=distR,
+                                                           imageSize=ChessImaR.shape[::-1],
+                                                           criteria=criteria_stereo,
+                                                           flags=flags)
 
-# StereoRectify function
+print(MLS)
+
+# StereoRectify function: returns rotation matrix and projection matrix
 
 # if 0 image croped, if 1 image nor croped
 rectify_scale = 0

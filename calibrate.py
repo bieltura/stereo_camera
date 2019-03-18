@@ -11,7 +11,7 @@ pic = 0
 ChessImaR = None
 ChessImaL = None
 
-# Prepare object points
+# Prepare object points (index of chessboard points)
 objp = np.zeros((chessboard_dim[0] * chessboard_dim[1], 3), np.float32)
 objp[:, :2] = np.mgrid[0:chessboard_dim[0], 0:chessboard_dim[1]].T.reshape(-1, 2)
 

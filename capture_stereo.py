@@ -3,7 +3,7 @@ import glob
 
 # Variables for calibration
 num_pictures = 40
-chessboard_dim = (8, 5)
+chessboard_dim = (9, 6)
 pic = 0
 
 # Image variables
@@ -63,8 +63,8 @@ while True:
             cv2.imshow('VideoL', cv2.resize(grayL, (320, 240)))
 
             # Save the image in the file where this Programm is located
-            cv2.imwrite('images/chessboard-R'+str(pic)+'.png',frameR)
-            cv2.imwrite('images/chessboard-L'+str(pic)+'.png',frameL)
+            cv2.imwrite('images/chessboard-R'+str(pic)+'.png', frameR)
+            cv2.imwrite('images/chessboard-L'+str(pic)+'.png', frameL)
 
             pic = pic + 1
             print('Chessboard {0}/{1}'.format(pic, num_pictures))

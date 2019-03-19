@@ -3,10 +3,19 @@ import cv2
 import glob
 import files
 
+stereo_calibration = False
+
 # Termination criteria
 criteria_stereo = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-imgpointsR, imgpointsL, objpoints, mtxR, distR, mtxL, distL, ChessImaR = files.read_calibration()
+if stereo_calibration:
+    imgpointsR, imgpointsL, objpoints, mtxR, distR, mtxL, distL, ChessImaR = files.read_stereo_calibration()
+else:
+    imgpointsR, objpoints, mtxR, distR, ChessImaR = files.read_single_calibration()
+    imgpointsL = imgpointsR
+    mtxL = mtxR
+    distL = distR
+
 print("Calibration files successfully loaded")
 
 # Call the two cameras

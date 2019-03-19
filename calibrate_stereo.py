@@ -3,8 +3,8 @@ import numpy as np
 import files
 
 # Variables for calibration
-num_pictures = 20
-chessboard_dim = (8, 5)
+num_pictures = 30
+chessboard_dim = (9, 6)
 pic = 0
 
 # Image variables
@@ -30,7 +30,7 @@ for pic in range(num_pictures):
 
     # Capture the frame
     frameR = cv2.imread('images/chessboard-R'+str(pic)+'.png')
-    frameL = cv2.imread('images/chessboard-R' + str(pic) + '.png')
+    frameL = cv2.imread('images/chessboard-L' + str(pic) + '.png')
 
     # Convert to gray scale
     grayR = cv2.cvtColor(frameR, cv2.COLOR_BGR2GRAY)
@@ -62,6 +62,6 @@ print("Distoriton coefficients: \n{}".format(distR))
 print("Left camera: A matrix: \n{}".format(mtxL))
 print("Distoriton coefficients: \n{}".format(distL))
 
-files.write_calibration(imgpointsL, imgpointsR, objpoints, mtxR, distR, mtxL, distL, ChessImaR)
+files.write_stereo_calibration(imgpointsL, imgpointsR, objpoints, mtxR, distR, mtxL, distL, grayR)
 
 print("Calibration ended")

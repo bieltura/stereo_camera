@@ -28,7 +28,7 @@ while True:
     retR, frameR = CamR.read()
     retL, frameL = CamL.read()
 
-    # Convert to gray scale.
+    # Convert to gray scale
     grayR = cv2.cvtColor(frameR, cv2.COLOR_BGR2GRAY)
     grayL = cv2.cvtColor(frameL, cv2.COLOR_BGR2GRAY)
 

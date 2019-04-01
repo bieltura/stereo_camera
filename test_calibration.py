@@ -32,7 +32,7 @@ while True:
     # See the images
     cv2.imshow('Real capture', np.hstack([frameL, frameR]))
 
-    # undistort
+    # Rectify images with calibration
     dstR = cv2.undistort(frameR, mtxR, distR, None, newcameramtxR)
     dstL = cv2.undistort(frameL, mtxL, distL, None, newcameramtxL)
     cv2.imshow('Rectidifed images', np.hstack([dstL, dstR]))

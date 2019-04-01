@@ -1,40 +1,22 @@
-import numpy as np
 import cv2
-import glob
 import files
+import numpy as np
 
-stereo_calibration = False
+imgpointsR, imgpointsL, objpoints, mtxR, distR, mtxL, distL, ChessImaR = files.read_calibration()
 
-if stereo_calibration:
-    imgpointsR, imgpointsL, objpoints, mtxR, distR, mtxL, distL, ChessImaR = files.read_stereo_calibration()
-else:
-    imgpointsR, objpoints, mtxR, distR, ChessImaR = files.read_single_calibration()
-    imgpointsL = imgpointsR
-    mtxL = mtxR
-    distL = distR
+calibration_size = (640, 360)
 
 # Termination criteria
 criteria_stereo = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-imgpointsR, imgpointsL, objpoints, mtxR, distR, mtxL, distL, ChessImaR = files.read_calibration()
 print("Calibration files successfully loaded")
 
 # Call the two cameras
-input("Connect the right camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamR = cv2.VideoCapture(devices[0])
+CamR = cv2.VideoCapture(0)
+newcameramtxR, roi = cv2.getOptimalNewCameraMatrix(mtxR, distR, ChessImaR.shape[::-1], 0, ChessImaR.shape[::-1])
 
-wR = int(CamR.get(cv2.CAP_PROP_FRAME_WIDTH))
-hR = int(CamR.get(cv2.CAP_PROP_FRAME_HEIGHT))
-newcameramtxR, roi = cv2.getOptimalNewCameraMatrix(mtxR, distR, (wR, hR), 0, (wR, hR))
-
-input("Connect the left camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamL = cv2.VideoCapture(devices[0])
-
-wL = int(CamL.get(cv2.CAP_PROP_FRAME_WIDTH))
-hL = int(CamL.get(cv2.CAP_PROP_FRAME_HEIGHT))
-newcameramtxL, roi = cv2.getOptimalNewCameraMatrix(mtxL, distL, (wL, hL), 0, (wL, hL))
+CamL = cv2.VideoCapture(1)
+newcameramtxL, roi = cv2.getOptimalNewCameraMatrix(mtxL, distL, ChessImaR.shape[::-1], 0, ChessImaR.shape[::-1])
 
 while True:
 
@@ -44,20 +26,20 @@ while True:
     retR, frameR = CamR.read()
     retL, frameL = CamL.read()
 
+    frameR = cv2.resize(frameR, calibration_size)
+    frameL = cv2.resize(frameL, calibration_size)
+
     # See the images
-    cv2.imshow('imgR', cv2.resize(frameR, (480, 320)))
-    cv2.imshow('imgL', cv2.resize(frameL, (480, 320)))
+    cv2.imshow('Real capture', np.hstack([frameL, frameR]))
 
     # undistort
     dstR = cv2.undistort(frameR, mtxR, distR, None, newcameramtxR)
     dstL = cv2.undistort(frameL, mtxL, distL, None, newcameramtxL)
-    cv2.imshow('imgRU', cv2.resize(dstR, (480, 320)))
-    cv2.imshow('imgLU', cv2.resize(dstL, (480, 320)))
+    cv2.imshow('Rectidifed images', np.hstack([dstL, dstR]))
 
     # If key is 'c' for capture
     if key & 0xFF == ord('q'):
         break
-
 
 # Release the Cameras
 CamR.release()

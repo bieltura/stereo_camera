@@ -9,7 +9,5 @@ __pycache__/
 */__pycache__/
 
 # Local chessboard images and calibration
-models/single/*.npy
-models/stereo/*.npy
+models/*.npy
 images/*.png
-images_single/*.png

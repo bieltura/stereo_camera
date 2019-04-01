@@ -1,38 +1,23 @@
 import numpy as np
 import cv2
-import glob
 import files
-
-stereo_calibration = False
 
 # Termination criteria
 criteria_stereo = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
-if stereo_calibration:
-    imgpointsR, imgpointsL, objpoints, mtxR, distR, mtxL, distL, ChessImaR = files.read_stereo_calibration()
-else:
-    imgpointsR, objpoints, mtxR, distR, ChessImaR = files.read_single_calibration()
-    imgpointsL = imgpointsR
-    mtxL = mtxR
-    distL = distR
+imgpointsR, imgpointsL, objpoints, mtxR, distR, mtxL, distL, ChessImaR = files.read_calibration()
+
+calibration_size = (640, 360)
 
 print("Calibration files successfully loaded")
 
 # Call the two cameras
-input("Connect the right camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamR = cv2.VideoCapture(devices[0])
-
-input("Connect the left camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamL = cv2.VideoCapture(devices[0])
+CamR = cv2.VideoCapture(0)
+CamL = cv2.VideoCapture(1)
 
 # StereoCalibrate function
 flags = 0
 flags |= cv2.CALIB_FIX_INTRINSIC
-
-# is MLS = mtxL?
-print(mtxL)
 
 retS, MLS, dLS, MRS, dRS, R, T, E, F = cv2.stereoCalibrate(objectPoints=objpoints,
                                                            imagePoints1=imgpointsL,
@@ -44,8 +29,6 @@ retS, MLS, dLS, MRS, dRS, R, T, E, F = cv2.stereoCalibrate(objectPoints=objpoint
                                                            imageSize=ChessImaR.shape[::-1],
                                                            criteria=criteria_stereo,
                                                            flags=flags)
-
-print(MLS)
 
 # StereoRectify function: returns rotation matrix and projection matrix
 
@@ -89,6 +72,10 @@ while True:
     retR, frameR = CamR.read()
     retL, frameL = CamL.read()
 
+    # Resize to the calibration
+    frameR = cv2.resize(frameR, calibration_size)
+    frameL = cv2.resize(frameL, calibration_size)
+
     # Rectify the images on rotation and alignement
     Left_nice = cv2.remap(frameL, Left_Stereo_Map[0], Left_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
     Right_nice = cv2.remap(frameR, Right_Stereo_Map[0], Right_Stereo_Map[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
@@ -97,11 +84,13 @@ while True:
     grayR = cv2.cvtColor(Right_nice, cv2.COLOR_BGR2GRAY)
     grayL = cv2.cvtColor(Left_nice, cv2.COLOR_BGR2GRAY)
 
+    # Filter the noise to make the stereo match in low light conditions
+    grayR = cv2.fastNlMeansDenoising(grayR, None, h=4)
+    grayL = cv2.fastNlMeansDenoising(grayL, None, h=4)
+
     # Compute the 2 images for the Depth_image
     dispL = stereo.compute(grayL, grayR)
     dispR = stereoR.compute(grayR, grayL)
-
-    # Using the WLS filter
 
     # Disparity map left, left view, filtered_disparity map, disparity map right, ROI=rect (to be done)
     filteredImg = wls_filter.filter(dispL, grayL, None, dispR)
@@ -109,11 +98,11 @@ while True:
     filteredImg = np.uint8(filteredImg)
 
     # Change the Color of the Picture into an Ocean Color_Map
-    filt_Color = cv2.applyColorMap(filteredImg,cv2.COLORMAP_OCEAN)
+    filteredImg = cv2.applyColorMap(filteredImg,cv2.COLORMAP_OCEAN)
 
-    cv2.imshow('Filtered Color Depth', cv2.resize(filteredImg, (320, 240)))
-    cv2.imshow('Filtered L', cv2.resize(Left_nice, (320, 240)))
-    cv2.imshow('Filtered R', cv2.resize(Right_nice, (320, 240)))
+    cv2.imshow('Filtered Color Depth', cv2.resize(filteredImg, calibration_size))
+    cv2.imshow('Both rectified and noise filtered', np.hstack([grayL, grayR]))
+    cv2.imshow('Real capture', np.hstack([frameL, frameR]))
 
     # End the Programme
     if cv2.waitKey(1) & 0xFF == ord('q'):

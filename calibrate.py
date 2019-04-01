@@ -3,13 +3,12 @@ import numpy as np
 import files
 
 # Variables for calibration
-num_pictures = 30
+num_pictures = 50
 chessboard_dim = (9, 6)
-pic = 0
+calibration_size = (640, 360)
 
 # Image variables
 ChessImaR = None
-ChessImaL = None
 
 # Prepare object points (index of chessboard points)
 objp = np.zeros((chessboard_dim[0] * chessboard_dim[1], 3), np.float32)
@@ -28,9 +27,13 @@ print("Loading chessboard pictures")
 
 for pic in range(num_pictures):
 
-    # Capture the frame
-    frameR = cv2.imread('images/chessboard-R'+str(pic)+'.png')
+    # Capture the frame calibration_size
+    frameR = cv2.imread('images/chessboard-R' + str(pic) + '.png')
     frameL = cv2.imread('images/chessboard-L' + str(pic) + '.png')
+
+    # Resize it to the calibration size
+    frameR = cv2.resize(frameR, calibration_size)
+    frameL = cv2.resize(frameL, calibration_size)
 
     # Convert to gray scale
     grayR = cv2.cvtColor(frameR, cv2.COLOR_BGR2GRAY)
@@ -62,6 +65,6 @@ print("Distoriton coefficients: \n{}".format(distR))
 print("Left camera: A matrix: \n{}".format(mtxL))
 print("Distoriton coefficients: \n{}".format(distL))
 
-files.write_stereo_calibration(imgpointsL, imgpointsR, objpoints, mtxR, distR, mtxL, distL, grayR)
+files.write_calibration(imgpointsL, imgpointsR, objpoints, mtxR, distR, mtxL, distL, grayR)
 
 print("Calibration ended")

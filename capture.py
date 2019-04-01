@@ -1,10 +1,10 @@
 import cv2
-import glob
 
 # Variables for calibration
-num_pictures = 40
+num_pictures = 50
 chessboard_dim = (9, 6)
 pic = 0
+calibration_size = (640, 360)
 
 # Image variables
 ChessImaR = None
@@ -14,14 +14,8 @@ ChessImaL = None
 criteria_stereo = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
 # Call the two cameras
-input("Connect the right camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamR = cv2.VideoCapture(devices[0])
-
-input("Connect the left camera and press any key ...")
-devices = glob.glob("/dev/video?")
-CamL = cv2.VideoCapture(devices[0])
-
+CamR = cv2.VideoCapture(0)
+CamL = cv2.VideoCapture(1)
 
 # Start the calibration process
 print("Calibration process started, press 'C' to take a picture")
@@ -34,13 +28,17 @@ while True:
     retR, frameR = CamR.read()
     retL, frameL = CamL.read()
 
-    # Convert to gray scale
+    # Convert to gray scale.
     grayR = cv2.cvtColor(frameR, cv2.COLOR_BGR2GRAY)
     grayL = cv2.cvtColor(frameL, cv2.COLOR_BGR2GRAY)
 
+    # Resize to the minimum calibration to detect
+    grayR = cv2.resize(grayR, calibration_size)
+    grayL = cv2.resize(grayL, calibration_size)
+
     # See the images
-    cv2.imshow('imgR', cv2.resize(frameR, (320, 240)))
-    cv2.imshow('imgL', cv2.resize(frameL, (320, 240)))
+    cv2.imshow('imgR', cv2.resize(frameR, calibration_size))
+    cv2.imshow('imgL', cv2.resize(frameL, calibration_size))
 
     # If key is 'c' for capture
     if key & 0xFF == ord('c'):
